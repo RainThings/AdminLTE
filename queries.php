@@ -59,7 +59,12 @@ else if(isset($_GET["forwarddest"]))
 }
 else if(isset($_GET["querytype"]))
 {
-	$showing .= " type ".getQueryTypeStr($_GET["querytype"])." queries";
+	$qtypes = ["A (IPv4)", "AAAA (IPv6)", "ANY", "SRV", "SOA", "PTR", "TXT", "NAPTR"];
+	$qtype = intval($_GET["querytype"]);
+	if($qtype > 0 && $qtype <= count($qtypes))
+		$showing .= " ".$qtypes[$qtype-1]." queries";
+	else
+		$showing .= " type ".$qtype." queries";
 }
 else if(isset($_GET["domain"]))
 {

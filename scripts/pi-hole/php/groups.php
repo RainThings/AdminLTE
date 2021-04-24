@@ -382,10 +382,7 @@ if ($_POST['action'] == 'get_groups') {
             throw new Exception('While executing DELETE statement: ' . $db->lastErrorMsg());
         }
 
-        $groups = array();
-        if(isset($_POST['groups']))
-            $groups = $_POST['groups'];
-        foreach ($groups as $gid) {
+        foreach ($_POST['groups'] as $gid) {
             $stmt = $db->prepare('INSERT INTO client_by_group (client_id,group_id) VALUES(:id,:gid);');
             if (!$stmt) {
                 throw new Exception('While preparing INSERT INTO statement: ' . $db->lastErrorMsg());
@@ -403,9 +400,7 @@ if ($_POST['action'] == 'get_groups') {
                 throw new Exception('While executing INSERT INTO statement: ' . $db->lastErrorMsg());
             }
         }
-        if(!$db->query('COMMIT;')) {
-            throw new Exception('While commiting changes to the database: ' . $db->lastErrorMsg());
-        }
+        $db->query('COMMIT;');
 
         $reload = true;
         JSON_success();
@@ -442,9 +437,7 @@ if ($_POST['action'] == 'get_groups') {
         if (!$stmt->execute()) {
             throw new Exception('While executing client statement: ' . $db->lastErrorMsg());
         }
-        if(!$db->query('COMMIT;')) {
-            throw new Exception('While commiting changes to the database: ' . $db->lastErrorMsg());
-        }
+        $db->query('COMMIT;');
 
         $reload = true;
         JSON_success();
@@ -684,9 +677,7 @@ if ($_POST['action'] == 'get_groups') {
             $added++;
         }
 
-        if(!$db->query('COMMIT;')) {
-            throw new Exception('While commiting changes to the database: ' . $db->lastErrorMsg());
-        }
+        $db->query('COMMIT;');
 
         $after = intval($db->querySingle("SELECT COUNT(*) FROM domainlist;"));
         $difference = $after - $before;
@@ -748,43 +739,39 @@ if ($_POST['action'] == 'get_groups') {
             throw new Exception('While executing: ' . $db->lastErrorMsg());
         }
 
-        $stmt = $db->prepare('DELETE FROM domainlist_by_group WHERE domainlist_id = :id');
-        if (!$stmt) {
-            throw new Exception('While preparing DELETE statement: ' . $db->lastErrorMsg());
-        }
-
-        if (!$stmt->bindValue(':id', intval($_POST['id']), SQLITE3_INTEGER)) {
-            throw new Exception('While binding id: ' . $db->lastErrorMsg());
-        }
-
-        if (!$stmt->execute()) {
-            throw new Exception('While executing DELETE statement: ' . $db->lastErrorMsg());
-        }
-
-        $groups = array();
-        if(isset($_POST['groups']))
-            $groups = $_POST['groups'];
-        foreach ($groups as $gid) {
-            $stmt = $db->prepare('INSERT INTO domainlist_by_group (domainlist_id,group_id) VALUES(:id,:gid);');
+        if (isset($_POST['groups'])) {
+            $stmt = $db->prepare('DELETE FROM domainlist_by_group WHERE domainlist_id = :id');
             if (!$stmt) {
-                throw new Exception('While preparing INSERT INTO statement: ' . $db->lastErrorMsg());
+                throw new Exception('While preparing DELETE statement: ' . $db->lastErrorMsg());
             }
 
             if (!$stmt->bindValue(':id', intval($_POST['id']), SQLITE3_INTEGER)) {
                 throw new Exception('While binding id: ' . $db->lastErrorMsg());
             }
 
-            if (!$stmt->bindValue(':gid', intval($gid), SQLITE3_INTEGER)) {
-                throw new Exception('While binding gid: ' . $db->lastErrorMsg());
-            }
-
             if (!$stmt->execute()) {
-                throw new Exception('While executing INSERT INTO statement: ' . $db->lastErrorMsg());
+                throw new Exception('While executing DELETE statement: ' . $db->lastErrorMsg());
             }
-        }
 
-        if(!$db->query('COMMIT;')) {
-            throw new Exception('While commiting changes to the database: ' . $db->lastErrorMsg());
+            foreach ($_POST['groups'] as $gid) {
+                $stmt = $db->prepare('INSERT INTO domainlist_by_group (domainlist_id,group_id) VALUES(:id,:gid);');
+                if (!$stmt) {
+                    throw new Exception('While preparing INSERT INTO statement: ' . $db->lastErrorMsg());
+                }
+
+                if (!$stmt->bindValue(':id', intval($_POST['id']), SQLITE3_INTEGER)) {
+                    throw new Exception('While binding id: ' . $db->lastErrorMsg());
+                }
+
+                if (!$stmt->bindValue(':gid', intval($gid), SQLITE3_INTEGER)) {
+                    throw new Exception('While binding gid: ' . $db->lastErrorMsg());
+                }
+
+                if (!$stmt->execute()) {
+                    throw new Exception('While executing INSERT INTO statement: ' . $db->lastErrorMsg());
+                }
+            }
+            $db->query('COMMIT;');
         }
 
         $reload = true;
@@ -823,9 +810,7 @@ if ($_POST['action'] == 'get_groups') {
             throw new Exception('While executing domainlist statement: ' . $db->lastErrorMsg());
         }
 
-        if(!$db->query('COMMIT;')) {
-            throw new Exception('While commiting changes to the database: ' . $db->lastErrorMsg());
-        }
+        $db->query('COMMIT;');
 
         $reload = true;
         JSON_success();
@@ -871,9 +856,7 @@ if ($_POST['action'] == 'get_groups') {
             throw new Exception('While executing domainlist statement: ' . $db->lastErrorMsg());
         }
 
-        if(!$db->query('COMMIT;')) {
-            throw new Exception('While commiting changes to the database: ' . $db->lastErrorMsg());
-        }
+        $db->query('COMMIT;');
 
         $reload = true;
         JSON_success();
@@ -937,11 +920,7 @@ if ($_POST['action'] == 'get_groups') {
                 continue;
             }
 
-            // this will remove first @ that is after schema and before domain
-           // $1 is optional schema, $2 is userinfo
-            $check_address = preg_replace("|([^:/]*://)?([^/]+)@|", "$1$2", $address, 1);
-
-            if(preg_match("/[^a-zA-Z0-9:\/?&%=~._()-;]/", $check_address) !== 0) {
+            if(preg_match("/[^a-zA-Z0-9:\/?&%=~._()-;]/", $address) !== 0) {
                 throw new Exception('<strong>Invalid adlist URL ' . htmlentities($address) . '</strong><br>'.
                 'Added ' . $added . " out of ". $total . " adlists");
             }
@@ -958,9 +937,7 @@ if ($_POST['action'] == 'get_groups') {
             $added++;
         }
 
-        if(!$db->query('COMMIT;')) {
-            throw new Exception('While commiting changes to the database: ' . $db->lastErrorMsg());
-        }
+        $db->query('COMMIT;');
 
         $reload = true;
         JSON_success();
@@ -1016,10 +993,7 @@ if ($_POST['action'] == 'get_groups') {
             throw new Exception('While executing DELETE statement: ' . $db->lastErrorMsg());
         }
 
-        $groups = array();
-        if(isset($_POST['groups']))
-            $groups = $_POST['groups'];
-        foreach ($groups as $gid) {
+        foreach ($_POST['groups'] as $gid) {
             $stmt = $db->prepare('INSERT INTO adlist_by_group (adlist_id,group_id) VALUES(:id,:gid);');
             if (!$stmt) {
                 throw new Exception('While preparing INSERT INTO statement: ' . $db->lastErrorMsg());
@@ -1038,9 +1012,7 @@ if ($_POST['action'] == 'get_groups') {
             }
         }
 
-        if(!$db->query('COMMIT;')) {
-            throw new Exception('While commiting changes to the database: ' . $db->lastErrorMsg());
-        }
+        $db->query('COMMIT;');
 
         $reload = true;
         JSON_success();
@@ -1078,9 +1050,7 @@ if ($_POST['action'] == 'get_groups') {
             throw new Exception('While executing adlist statement: ' . $db->lastErrorMsg());
         }
 
-        if(!$db->query('COMMIT;')) {
-            throw new Exception('While commiting changes to the database: ' . $db->lastErrorMsg());
-        }
+        $db->query('COMMIT;');
 
         $reload = true;
         JSON_success();
@@ -1120,9 +1090,7 @@ if ($_POST['action'] == 'get_groups') {
                 $added++;
             }
 
-            if(!$db->query('COMMIT;')) {
-                throw new Exception('While commiting changes to the database: ' . $db->lastErrorMsg());
-            }
+            $db->query('COMMIT;');
 
             $after = intval($db->querySingle("SELECT COUNT(*) FROM domain_audit;"));
             $difference = $after - $before;

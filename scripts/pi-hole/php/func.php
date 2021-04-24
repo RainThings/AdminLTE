@@ -164,7 +164,7 @@ function addCustomDNSEntry($ip="", $domain="", $json=true)
     }
     catch (\Exception $ex)
     {
-        return returnError($ex->getMessage(), $json);
+        return error($ex->getMessage(), $json);
     }
 }
 
@@ -229,7 +229,7 @@ function deleteAllCustomDNSEntries()
             }
             catch (\Exception $ex)
             {
-                return returnError($ex->getMessage());
+                return errorJsonResponse($ex->getMessage());
             }
 
             fclose($handle);
@@ -390,7 +390,7 @@ function returnSuccess($message = "", $json = true)
     if ($json) {
         return [ "success" => true, "message" => $message ];
     } else {
-        echo $message."<br>";
+        echo $msg."<br>";
         return true;
     }
 }
@@ -400,19 +400,9 @@ function returnError($message = "", $json = true)
     if ($json) {
         return [ "success" => false, "message" => $message ];
     } else {
-        echo $message."<br>";
+        echo $msg."<br>";
         return false;
     }
-}
-
-function getQueryTypeStr($querytype)
-{
-    $qtypes = ["A (IPv4)", "AAAA (IPv6)", "ANY", "SRV", "SOA", "PTR", "TXT", "NAPTR", "MX", "DS", "RRSIG", "DNSKEY", "NS", "OTHER", "SVCB", "HTTPS"];
-    $qtype = intval($querytype);
-    if($qtype > 0 && $qtype <= count($qtypes))
-        return $qtypes[$qtype-1];
-    else
-        return "TYPE".($qtype - 100);
 }
 
 ?>
